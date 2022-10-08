@@ -9,3 +9,7 @@ $\textcolor{orange}{Ensure\ that\ MySQL\ is\ installed\ on\ your\ computer\ befo
 4. Go to `cd cmd/client-grpc`
 5. Run `go build .`
 6. Run `./client-grpc.exe -server=localhost:9090`
+
+```diff
+or running both `server` and `client` in run directory. (first run `server`)
+```
