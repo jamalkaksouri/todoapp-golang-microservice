@@ -1,7 +1,7 @@
 # TodoApp-golang-microservice
 Installation
 
-$\textcolor{orange}{Ensure\ that\ MySQL\ is\ installed\ on\ your\ computer\ before\ proceeding\ in\ orange}$
+$\textcolor{orange}{Ensure\ that\ MySQL\ is\ installed\ on\ your\ computer\ before\ proceeding}$
 
 1. Go to directory `cd cmd/server`
 2. Run `go build .`
