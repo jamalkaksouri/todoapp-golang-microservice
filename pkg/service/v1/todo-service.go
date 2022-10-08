@@ -253,7 +253,12 @@ func (s *toDoServiceServer) ReadAll(ctx context.Context, req *v1.ReadAllRequest)
 	if err != nil {
 		return nil, err
 	}
-	defer c.Close()
+	defer func(c *sql.Conn) {
+		err := c.Close()
+		if err != nil {
+			return
+		}
+	}(c)
 
 	// get ToDo list
 	rows, err := c.QueryContext(ctx, "SELECT `ID`, `Title`, `Description`, `Reminder` FROM ToDo")
