@@ -280,6 +280,7 @@ func (s *toDoServiceServer) ReadAll(ctx context.Context, req *v1.ReadAllRequest)
 			return nil, status.Error(codes.Unknown, "failed to retrieve field values from ToDo row-> "+err.Error())
 		}
 		td.Reminder = timestamppb.New(reminder)
+		err := td.Reminder.CheckValid()
 		if err != nil {
 			return nil, status.Error(codes.Unknown, "reminder field has invalid format-> "+err.Error())
 		}
