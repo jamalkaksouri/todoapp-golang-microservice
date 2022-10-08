@@ -10,6 +10,4 @@ $\textcolor{orange}{Ensure\ that\ MySQL\ is\ installed\ on\ your\ computer\ befo
 5. Run `go build .`
 6. Run `./client-grpc.exe -server=localhost:9090`
 
-```diff
 \textcolor{green}{Or running both servers and clients from a single directory named run apps. (the first server to be run)}
-```
