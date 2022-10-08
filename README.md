@@ -2,7 +2,7 @@
 Installation
 
 ```diff
-Ensure that MySQL is installed on your computer before proceeding in orange
+${\color{orange}{Ensure\ that\ MySQL\ is\ installed\ on\ your\ computer\ before\ proceeding\ in\ orange}}$
 ```
 
 1. Go to directory `cd cmd/server`
