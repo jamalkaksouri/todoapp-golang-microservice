@@ -39,7 +39,8 @@ func RunServer(ctx context.Context, v1API v1.ToDoServiceServer, port string) err
 	//}
 
 	// register service
-	server := grpc.NewServer(opts...)
+	//server := grpc.NewServer(opts...)
+	server := grpc.NewServer()
 	v1.RegisterToDoServiceServer(server, v1API)
 
 	// graceful shutdown
@@ -47,7 +48,7 @@ func RunServer(ctx context.Context, v1API v1.ToDoServiceServer, port string) err
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			// sig is a ^C, handle it
+			// signal is a ^C, handle it
 			log.Println("shutting down gRPC server...")
 
 			server.GracefulStop()
