@@ -1,1 +1,0 @@
-protoc --proto_path=api/proto/v1 --proto_path=pkg --go-grpc_out=pkg --go_out=pkg
