@@ -4,13 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	v1 "github.com/jamalkaksouri/todoapp-golang-microservice/pkg/api/proto/v1"
+	v12 "github.com/jamalkaksouri/todoapp-golang-microservice/pkg/api/v1"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"
 	"reflect"
 	"testing"
 	"time"
 
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
 )
 
@@ -28,18 +28,18 @@ func Test_toDoServiceServer_Create(t *testing.T) {
 	}(db)
 	s := NewToDoServiceServer(db)
 	tm := time.Now().In(time.UTC)
-	reminder, _ := ptypes.TimestampProto(tm)
+	reminder := timestamppb.New(tm)
 
 	type args struct {
 		ctx context.Context
-		req *v1.CreateRequest
+		req *v12.CreateRequest
 	}
 	tests := []struct {
 		name    string
-		s       v1.ToDoServiceServer
+		s       v12.ToDoServiceServer
 		args    args
 		mock    func()
-		want    *v1.CreateResponse
+		want    *v12.CreateResponse
 		wantErr bool
 	}{
 		{
@@ -47,9 +47,9 @@ func Test_toDoServiceServer_Create(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.CreateRequest{
+				req: &v12.CreateRequest{
 					Api: "v1",
-					ToDo: &v1.ToDo{
+					ToDo: &v12.ToDo{
 						Title:       "title",
 						Description: "description",
 						Reminder:    reminder,
@@ -60,7 +60,7 @@ func Test_toDoServiceServer_Create(t *testing.T) {
 				mock.ExpectExec("INSERT INTO ToDo").WithArgs("title", "description", tm).
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
-			want: &v1.CreateResponse{
+			want: &v12.CreateResponse{
 				Api: "v1",
 				Id:  1,
 			},
@@ -70,9 +70,9 @@ func Test_toDoServiceServer_Create(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.CreateRequest{
+				req: &v12.CreateRequest{
 					Api: "v1000",
-					ToDo: &v1.ToDo{
+					ToDo: &v12.ToDo{
 						Title:       "title",
 						Description: "description",
 						Reminder: &timestamp.Timestamp{
@@ -90,9 +90,9 @@ func Test_toDoServiceServer_Create(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.CreateRequest{
+				req: &v12.CreateRequest{
 					Api: "v1",
-					ToDo: &v1.ToDo{
+					ToDo: &v12.ToDo{
 						Title:       "title",
 						Description: "description",
 						Reminder: &timestamp.Timestamp{
@@ -110,9 +110,9 @@ func Test_toDoServiceServer_Create(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.CreateRequest{
+				req: &v12.CreateRequest{
 					Api: "v1",
-					ToDo: &v1.ToDo{
+					ToDo: &v12.ToDo{
 						Title:       "title",
 						Description: "description",
 						Reminder:    reminder,
@@ -130,9 +130,9 @@ func Test_toDoServiceServer_Create(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.CreateRequest{
+				req: &v12.CreateRequest{
 					Api: "v1",
-					ToDo: &v1.ToDo{
+					ToDo: &v12.ToDo{
 						Title:       "title",
 						Description: "description",
 						Reminder:    reminder,
@@ -175,18 +175,18 @@ func Test_toDoServiceServer_Read(t *testing.T) {
 	}(db)
 	s := NewToDoServiceServer(db)
 	tm := time.Now().In(time.UTC)
-	reminder, _ := ptypes.TimestampProto(tm)
+	reminder := timestamppb.New(tm)
 
 	type args struct {
 		ctx context.Context
-		req *v1.ReadRequest
+		req *v12.ReadRequest
 	}
 	tests := []struct {
 		name    string
-		s       v1.ToDoServiceServer
+		s       v12.ToDoServiceServer
 		args    args
 		mock    func()
-		want    *v1.ReadResponse
+		want    *v12.ReadResponse
 		wantErr bool
 	}{
 		{
@@ -194,7 +194,7 @@ func Test_toDoServiceServer_Read(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.ReadRequest{
+				req: &v12.ReadRequest{
 					Api: "v1",
 					Id:  1,
 				},
@@ -204,9 +204,9 @@ func Test_toDoServiceServer_Read(t *testing.T) {
 					AddRow(1, "title", "description", tm)
 				mock.ExpectQuery("SELECT (.+) FROM ToDo").WithArgs(1).WillReturnRows(rows)
 			},
-			want: &v1.ReadResponse{
+			want: &v12.ReadResponse{
 				Api: "v1",
-				ToDo: &v1.ToDo{
+				ToDo: &v12.ToDo{
 					Id:          1,
 					Title:       "title",
 					Description: "description",
@@ -219,7 +219,7 @@ func Test_toDoServiceServer_Read(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.ReadRequest{
+				req: &v12.ReadRequest{
 					Api: "v1",
 					Id:  1,
 				},
@@ -232,7 +232,7 @@ func Test_toDoServiceServer_Read(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.ReadRequest{
+				req: &v12.ReadRequest{
 					Api: "v1",
 					Id:  1,
 				},
@@ -248,7 +248,7 @@ func Test_toDoServiceServer_Read(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.ReadRequest{
+				req: &v12.ReadRequest{
 					Api: "v1",
 					Id:  1,
 				},
@@ -290,18 +290,18 @@ func Test_toDoServiceServer_Update(t *testing.T) {
 	}(db)
 	s := NewToDoServiceServer(db)
 	tm := time.Now().In(time.UTC)
-	reminder, _ := ptypes.TimestampProto(tm)
+	reminder := timestamppb.New(tm)
 
 	type args struct {
 		ctx context.Context
-		req *v1.UpdateRequest
+		req *v12.UpdateRequest
 	}
 	tests := []struct {
 		name    string
-		s       v1.ToDoServiceServer
+		s       v12.ToDoServiceServer
 		args    args
 		mock    func()
-		want    *v1.UpdateResponse
+		want    *v12.UpdateResponse
 		wantErr bool
 	}{
 		{
@@ -309,9 +309,9 @@ func Test_toDoServiceServer_Update(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.UpdateRequest{
+				req: &v12.UpdateRequest{
 					Api: "v1",
-					ToDo: &v1.ToDo{
+					ToDo: &v12.ToDo{
 						Id:          1,
 						Title:       "new title",
 						Description: "new description",
@@ -323,7 +323,7 @@ func Test_toDoServiceServer_Update(t *testing.T) {
 				mock.ExpectExec("UPDATE ToDo").WithArgs("new title", "new description", tm, 1).
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
-			want: &v1.UpdateResponse{
+			want: &v12.UpdateResponse{
 				Api:     "v1",
 				Updated: 1,
 			},
@@ -333,9 +333,9 @@ func Test_toDoServiceServer_Update(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.UpdateRequest{
+				req: &v12.UpdateRequest{
 					Api: "v1",
-					ToDo: &v1.ToDo{
+					ToDo: &v12.ToDo{
 						Id:          1,
 						Title:       "new title",
 						Description: "new description",
@@ -351,9 +351,9 @@ func Test_toDoServiceServer_Update(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.UpdateRequest{
+				req: &v12.UpdateRequest{
 					Api: "v1",
-					ToDo: &v1.ToDo{
+					ToDo: &v12.ToDo{
 						Id:          1,
 						Title:       "new title",
 						Description: "new description",
@@ -372,9 +372,9 @@ func Test_toDoServiceServer_Update(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.UpdateRequest{
+				req: &v12.UpdateRequest{
 					Api: "v1",
-					ToDo: &v1.ToDo{
+					ToDo: &v12.ToDo{
 						Id:          1,
 						Title:       "new title",
 						Description: "new description",
@@ -393,9 +393,9 @@ func Test_toDoServiceServer_Update(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.UpdateRequest{
+				req: &v12.UpdateRequest{
 					Api: "v1",
-					ToDo: &v1.ToDo{
+					ToDo: &v12.ToDo{
 						Id:          1,
 						Title:       "new title",
 						Description: "new description",
@@ -414,9 +414,9 @@ func Test_toDoServiceServer_Update(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.UpdateRequest{
+				req: &v12.UpdateRequest{
 					Api: "v1",
-					ToDo: &v1.ToDo{
+					ToDo: &v12.ToDo{
 						Id:          1,
 						Title:       "new title",
 						Description: "new description",
@@ -462,14 +462,14 @@ func Test_toDoServiceServer_Delete(t *testing.T) {
 
 	type args struct {
 		ctx context.Context
-		req *v1.DeleteRequest
+		req *v12.DeleteRequest
 	}
 	tests := []struct {
 		name    string
-		s       v1.ToDoServiceServer
+		s       v12.ToDoServiceServer
 		args    args
 		mock    func()
-		want    *v1.DeleteResponse
+		want    *v12.DeleteResponse
 		wantErr bool
 	}{
 		{
@@ -477,7 +477,7 @@ func Test_toDoServiceServer_Delete(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.DeleteRequest{
+				req: &v12.DeleteRequest{
 					Api: "v1",
 					Id:  1,
 				},
@@ -486,7 +486,7 @@ func Test_toDoServiceServer_Delete(t *testing.T) {
 				mock.ExpectExec("DELETE FROM ToDo").WithArgs(1).
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
-			want: &v1.DeleteResponse{
+			want: &v12.DeleteResponse{
 				Api:     "v1",
 				Deleted: 1,
 			},
@@ -496,7 +496,7 @@ func Test_toDoServiceServer_Delete(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.DeleteRequest{
+				req: &v12.DeleteRequest{
 					Api: "v1",
 					Id:  1,
 				},
@@ -509,7 +509,7 @@ func Test_toDoServiceServer_Delete(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.DeleteRequest{
+				req: &v12.DeleteRequest{
 					Api: "v1",
 					Id:  1,
 				},
@@ -525,7 +525,7 @@ func Test_toDoServiceServer_Delete(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.DeleteRequest{
+				req: &v12.DeleteRequest{
 					Api: "v1",
 					Id:  1,
 				},
@@ -541,7 +541,7 @@ func Test_toDoServiceServer_Delete(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.DeleteRequest{
+				req: &v12.DeleteRequest{
 					Api: "v1",
 					Id:  1,
 				},
@@ -582,20 +582,20 @@ func Test_toDoServiceServer_ReadAll(t *testing.T) {
 	}(db)
 	s := NewToDoServiceServer(db)
 	tm1 := time.Now().In(time.UTC)
-	reminder1, _ := ptypes.TimestampProto(tm1)
+	reminder1 := timestamppb.New(tm1)
 	tm2 := time.Now().In(time.UTC)
-	reminder2, _ := ptypes.TimestampProto(tm2)
+	reminder2 := timestamppb.New(tm2)
 
 	type args struct {
 		ctx context.Context
-		req *v1.ReadAllRequest
+		req *v12.ReadAllRequest
 	}
 	tests := []struct {
 		name    string
-		s       v1.ToDoServiceServer
+		s       v12.ToDoServiceServer
 		args    args
 		mock    func()
-		want    *v1.ReadAllResponse
+		want    *v12.ReadAllResponse
 		wantErr bool
 	}{
 		{
@@ -603,7 +603,7 @@ func Test_toDoServiceServer_ReadAll(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.ReadAllRequest{
+				req: &v12.ReadAllRequest{
 					Api: "v1",
 				},
 			},
@@ -613,9 +613,9 @@ func Test_toDoServiceServer_ReadAll(t *testing.T) {
 					AddRow(2, "title 2", "description 2", tm2)
 				mock.ExpectQuery("SELECT (.+) FROM ToDo").WillReturnRows(rows)
 			},
-			want: &v1.ReadAllResponse{
+			want: &v12.ReadAllResponse{
 				Api: "v1",
-				ToDos: []*v1.ToDo{
+				ToDos: []*v12.ToDo{
 					{
 						Id:          1,
 						Title:       "title 1",
@@ -636,7 +636,7 @@ func Test_toDoServiceServer_ReadAll(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.ReadAllRequest{
+				req: &v12.ReadAllRequest{
 					Api: "v1",
 				},
 			},
@@ -644,9 +644,9 @@ func Test_toDoServiceServer_ReadAll(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"ID", "Title", "Description", "Reminder"})
 				mock.ExpectQuery("SELECT (.+) FROM ToDo").WillReturnRows(rows)
 			},
-			want: &v1.ReadAllResponse{
+			want: &v12.ReadAllResponse{
 				Api:   "v1",
-				ToDos: []*v1.ToDo{},
+				ToDos: []*v12.ToDo{},
 			},
 		},
 		{
@@ -654,7 +654,7 @@ func Test_toDoServiceServer_ReadAll(t *testing.T) {
 			s:    s,
 			args: args{
 				ctx: ctx,
-				req: &v1.ReadAllRequest{
+				req: &v12.ReadAllRequest{
 					Api: "v1",
 				},
 			},

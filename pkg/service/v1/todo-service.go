@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/golang/protobuf/ptypes"
-	v1 "github.com/jamalkaksouri/todoapp-golang-microservice/pkg/api/proto/v1"
+	v1 "github.com/jamalkaksouri/todoapp-golang-microservice/pkg/api/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"time"
 )
 
@@ -67,14 +67,15 @@ func (s *toDoServiceServer) Create(ctx context.Context, req *v1.CreateRequest) (
 		}
 	}(c)
 
-	reminder, err := ptypes.Timestamp(req.ToDo.Reminder)
+	err = req.ToDo.Reminder.CheckValid()
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "reminder field has invalid format-> "+err.Error())
 	}
 
 	// insert ToDo entity data
-	res, err := c.ExecContext(ctx, "INSERT INTO ToDo(`Title`, `Description`, `Reminder`) VALUES(?, ?, ?)",
-		req.ToDo.Title, req.ToDo.Description, reminder)
+	query := "INSERT INTO ToDo(`Title`, `Description`, `Reminder`) VALUES(?, ?, ?)"
+	res, err := c.ExecContext(ctx, query,
+		req.ToDo.Title, req.ToDo.Description, req.ToDo.Reminder.AsTime())
 	if err != nil {
 		return nil, status.Error(codes.Unknown, "failed to insert into ToDo-> "+err.Error())
 	}
@@ -137,10 +138,8 @@ func (s *toDoServiceServer) Read(ctx context.Context, req *v1.ReadRequest) (*v1.
 	if err := rows.Scan(&td.Id, &td.Title, &td.Description, &reminder); err != nil {
 		return nil, status.Error(codes.Unknown, "failed to retrieve field values from ToDo row-> "+err.Error())
 	}
-	td.Reminder, err = ptypes.TimestampProto(reminder)
-	if err != nil {
-		return nil, status.Error(codes.Unknown, "reminder field has invalid format-> "+err.Error())
-	}
+
+	td.Reminder = timestamppb.New(reminder)
 
 	if rows.Next() {
 		return nil, status.Error(codes.Unknown, fmt.Sprintf("found multiple ToDo rows with ID='%d'",
@@ -173,16 +172,16 @@ func (s *toDoServiceServer) Update(ctx context.Context, req *v1.UpdateRequest) (
 		}
 	}(c)
 
-	reminder, err := ptypes.Timestamp(req.ToDo.Reminder)
+	err = req.ToDo.Reminder.CheckValid()
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "reminder field has invalid format-> "+err.Error())
 	}
 
 	// update ToDo
 	res, err := c.ExecContext(ctx, "UPDATE ToDo SET `Title`=?, `Description`=?, `Reminder`=? WHERE `ID`=?",
-		req.ToDo.Title, req.ToDo.Description, reminder, req.ToDo.Id)
+		req.ToDo.Title, req.ToDo.Description, req.ToDo.Reminder.AsTime(), req.ToDo.Id)
 	if err != nil {
-		return nil, status.Error(codes.Unknown, "failed to update ToDo-> "+err.Error())
+		return nil, status.Error(codes.Unknown, "failed to update ToDo Data-> "+err.Error())
 	}
 
 	rows, err := res.RowsAffected()
@@ -254,12 +253,7 @@ func (s *toDoServiceServer) ReadAll(ctx context.Context, req *v1.ReadAllRequest)
 	if err != nil {
 		return nil, err
 	}
-	defer func(c *sql.Conn) {
-		err := c.Close()
-		if err != nil {
-			return
-		}
-	}(c)
+	defer c.Close()
 
 	// get ToDo list
 	rows, err := c.QueryContext(ctx, "SELECT `ID`, `Title`, `Description`, `Reminder` FROM ToDo")
@@ -274,13 +268,13 @@ func (s *toDoServiceServer) ReadAll(ctx context.Context, req *v1.ReadAllRequest)
 	}(rows)
 
 	var reminder time.Time
-	var list []*v1.ToDo
+	list := []*v1.ToDo{}
 	for rows.Next() {
 		td := new(v1.ToDo)
 		if err := rows.Scan(&td.Id, &td.Title, &td.Description, &reminder); err != nil {
 			return nil, status.Error(codes.Unknown, "failed to retrieve field values from ToDo row-> "+err.Error())
 		}
-		td.Reminder, err = ptypes.TimestampProto(reminder)
+		td.Reminder = timestamppb.New(reminder)
 		if err != nil {
 			return nil, status.Error(codes.Unknown, "reminder field has invalid format-> "+err.Error())
 		}
